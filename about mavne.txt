@@ -1,0 +1,7 @@
+validate = mvn validate will check if project file is based on maven formate or not 
+initaialize = mvn initialize 
+$ mvn package -DskipTest
+mvn clean package = clean and start 
+mvn install
+
+

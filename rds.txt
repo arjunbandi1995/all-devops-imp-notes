@@ -1,0 +1,11 @@
+RDS
+===============
+for connect we need details like endpoint 
+port number and username and password
+
+
+we need to install mysql amd sql server to connect to the database 
+run this command 
+
+sudo yum install mysql mysql-server 
+mysql -h mysql–instance1.123456789012.us-east-1.rds.amazonaws.com -P 3306 -u mymasteruser -p

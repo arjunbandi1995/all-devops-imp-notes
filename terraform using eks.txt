@@ -1,0 +1,20 @@
+
+ter       provider "aws" {
+ 
+ 
+
+ 
+         }
+        
+         resource "aws_eks_cluster" "cluster-001" {
+          tags {
+            name="cluster-001"
+          }
+
+
+         resource "aws_vpc" "myvpc" {
+
+ 
+         vpc_cidr="10.0.0.0/16"
+         
+         }

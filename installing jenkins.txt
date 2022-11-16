@@ -1,0 +1,253 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ubunut commands
+--------------    
+ df -h       
+cat /etc/os-release
+
+free -mh
+------------------
+
+install java
+
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+sudo dnf upgrade
+# Add required dependencies for the jenkins package
+sudo dnf install java-11-openjdk
+sudo dnf install jenkins
+sudo systemctl daemon-reload
+
+on ubuntu
+
+================================
+
+  curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+    /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+  
+Then add a Jenkins apt repository entry:
+    
+  echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+    https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+    /etc/apt/sources.list.d/jenkins.list > /dev/null
+  
+Update your local package index, then finally install Jenkins:
+
+
+    
+  sudo apt-get update
+  sudo apt-get install fontconfig openjdk-11-jre
+  sudo apt-get install jenkins
+====================================================================
+creating jobs with jenkins
+=====================================================================
+
+1. free style
+2. scripted pipeline
+3. Declarative pipeline jobs as pipeline job
+
+
+===
+ui(form filling)
+2 & 3 --code
+
+
+scripted pipleine
+===================
+node(){
+ stage("linuxcommand"){
+   sh ''' free -h
+          df -h '''
+  }
+}
+-----------------------
+
+node(){
+ stage("linuxcommand"){
+   sh ''' cat /etc/os-release '''
+           
+  }
+}
+---------------------
+
+node(){
+  stage("linuxcommand"){
+   sh ''' df -h '''
+  }
+  stage("linuxcommand"){
+   sh ''' free -h '''
+  }
+  stage("linuxcommand"){
+   sh ''' cat /etc/os-release '''
+ }
+}
+
+
+===================
+declarative pipline
+===================
+
+pipeline {
+  agent any
+   stages{
+     stage("stage name"){
+       steps{
+          sh ''' '''
+}
+}
+}
+}
+
++++++++++++++++++++++++++++++++++++++++
+
+pipeline {
+  agent any
+   stages{
+     stage("linuxcommad"){
+       steps{
+          sh ''' df -h '''
+}
+}
+}
+}
+
+++++++++++++++++++++++++++++++++++++++++++++
+
+==========================
+pipeline {
+ agent any
+ stages{
+  stage("m1"){
+    steps{
+     sh '''df -h '''
+}
+}
+stage("m2"){
+   steps{
+   sh ''' free -h '''
+ }
+}
+ stage("m3"){
+   steps{ 
+  sh ''' top '''
+     }
+  }
+}
+}
+================================================
+scripted code with genator
+--------
+===================
+
+node(){
+ stage("init"){
+ checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bhanuprakash678910/mavenproj.git']]])  
+           
+  }
+}
+
+(same for pipline)
+
+pipeline {
+  agent any
+   stages{
+     stage("init"){
+       steps{
+   git 'https://github.com/bhanuprakash678910/mavenproj.git'
+           
+}
+}
+}
+}
+
+
+
+JENKINS ARCHITECTURE
+____________________
+MASTER SLAVE ARCHITURE OR DISTRIBUTED ARCHITECTURE
+__________________________________________________
+
+node("slave1"){
+ stage("linuxcommand"){
+   sh ''' cat /etc/os-release '''
+           
+  }
+}
+
+=============
+pipeline {
+  agent {
+    label 'slave1'
+   stages{
+     stage("linuxcommad"){
+       steps{
+          sh ''' df -h '''
+}
+}
+}
+}
+
+-------------------------------------------------------------------------------------------------------------
+node("slave1"){
+ stage("init"){
+ checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bhanuprakash678910/mavenproj.git']]])  
+           
+  }
+}
+-------------------------------------------------------------------------------------------------------------------------
+declarivte pipline 
+
+pipeline {
+  agent {
+     label "slave1"
+}
+   stages{
+     stage("init"){
+       steps{
+   git 'https://github.com/bhanuprakash678910/mavenproj.git'
+           
+}
+}
+}
+}
+
+
+=========
+cronjob
+========
+MINUTE HOUR DOM MOUNTH DOW
+
+*/2****
+MINUTE	Minutes within the hour (0–59)
+HOUR	The hour of the day (0–23)
+DOM	The day of the month (1–31)
+MONTH	The month (1–12)
+DOW	The day of the week (0–7) where 0 and 7 are Sunday.
+
+
+15 14 7 8 * =>
+
+
+whats is jenkins ?
+Jenkins is an open source automation server. It helps automate the parts of software development related to building, testing, and deploying, facilitating continuous integration and continuous delivery. It is a server-based system that runs in servlet containers such as Apache Tomcat.
+
+developer will keep code in git hub form there jenkiens will downloads code
+and will do the build it will send the code to sonar qube devepole in to nexus 
+and then depoly into tomcat

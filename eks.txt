@@ -1,0 +1,248 @@
+we can create cluster using eks 
+controll plan will be managed by aws 
+
+in aws if one service wants to acces another service we need to create iAM roles
+
+
+setp1 
+======== 
+create an aws eks cluster Iam role
+
+iam = tursted entity type => aws service = choose a service 
+
+
+ 
+
+B EKSSETUP - Notepad
+
+Step1 
+===================
+
+
+create an Amazon EKS cluster IAM role
+
+IAM =>
+Trusted entity type => AWS service =. choose a service as EKS.select EKS-Cluster.click Next
+
+AmazonEKSClusterPolicy is autoselected.
+click Next
+Give any role name as : Role name= EKSClusterRoletest =>
+
+Click on Create Role. !
+
+
+step 2
+======================================
+
+creating EKS cluster from Console
+======================================
+
+select EKS service => click on Add cluster =. select create.
+
+Name: Enter a unique name for this cluster.
+
+Kubernetes version : 1.23
+
+Cluster service role => select the role created in step1
+click on Next
+
+select VPC
+
+Select subnets
+select security groups 
+cluster endpoint access : make it private/pbulic or both 
+
+
+click next on next create 
+
+
+cluster will become active after 20min 
+
+api server endpoint 
+
+
+
+step 3
+===========================================
+add nodegrope to the compute section of eks cluster to add that need to create launch template 
+
+
+
+
+step 4 
+=====================
+aws eks update-kubeconfig --region us-east-1 --name ekscluster1   (run this configure command) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+eks configure
+================================
+
+
+aws eks update-kubeconfig --region us-east-1 --name ekscluster1                  ( run this command to configure aws )
+
+
+
+=============================================
+
+
+EKS manages the control plane hence it wont be shown the resources which we add will be shown 
+loadbalancer service i can create only in the cloud provided services
+
+
+
+
+
+node group
+=======================
+A node group is a group of EC2 instances that supply compute capacity to your Amazon EKS cluster. You can add multiple node groups to your cluster.
+
+
+
+
+
+
+
+
+loadbalancer
+===========================
+if we create loadbalancer it can be utilzed by public 
+
+
+
+
+
+
+
+ngnix deploy.yml and service.yml
+==================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+        name: nginx-deploy
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: nginx
+    template:
+            metadata:
+               labels:
+                       app: nginx
+            spec:
+                    containers:
+                     - name: nginx
+                       image: nginx:1.14.2
+                       ports:
+                        - containerPort: 80
+
+
+
+ingress 
+=====================
+ingress is a kubernetes object 
+ingress looks like service 
+ingress means form outside i am going indside
+
+
+kind: Ingress
+ingress will map external urls to k8s services
+
+ingress acts as a bridge  between domain and service 
+
+
+ngnix is the main controller to ingress
+ingress works with a conpect of routing 
+
+Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. 
+Traffic routing is controlled by rules defined on the Ingress resource.
+
+ingress service and deployment
+=============================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: mavenwebappmydeploiy
+spec:
+ replicas: 1
+ strategy:
+    type: Recreate
+ selector:
+   matchLabels:
+     app: mavenwebapp
+ template:
+  metadata:
+   name: mavenwebapppod
+   labels:
+     app: mavenwebapp
+  spec:
+    containers:
+    - image: bhanuprakashec410/mavenwebapp
+      name: mavenwebappcontainer
+      ports:
+      - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mywebappssvc
+spec:
+  type: ClusterIp
+  selector:
+          app: mavenwebapp
+  ports:
+      port: 80
+      targetPort: 8080
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+launch template
+=============
+Use launch templates to automate instance launches, simplify permission policies, 
+and enforce best practices across your organization. Save launch parameters in a template that 
+can be used for on-demand launches and with managed services, including EC2 Auto Scaling and EC2 Fleet. 
+Easily update your launch parameters by creating a new launch template version.

@@ -1,0 +1,219 @@
+ terraform.exe plan ( plan about the ec2 instance )
+terraform.exe appy ( apply the changes creating the instance)
+ terraform.exe apply --auto-approve ( proceede with yes after apply) 
+terraform.exe destory ( destory the ec2 )
+terraform.exe fmt ( to formate the terrafrom file)
+terraform.exe show( to show the tf file)
+terraform.exe state list( list all the deatail )
+
+
+
+
+
+terraform top level block 
+1. fundamental blocks 
+2. variables blocks 
+3.calling/referencing blocks
+aws-subnet.dmz2.id( format to write anything in terrraform) 
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------
+terraform variables ( to use this create a seperate variables.tf file) 
+=======================
+region=var.region
+ pass variable using (terraform.exe plan -var instance_type=t3.medium)
+
+
+for mapping a variable file create a file with this extn sample.tfvars and runn
+terraform.exe plan --var-file="sample.tfvars"
+
+
+terraform.tfvars = if we keep the variables in this file than the terraform always picks this value as delafult 
+
+
+
+$ export TF_VAR_INSTANCE_TYPE="us-west-2" (set manuanlly)
+$ export TF_VAR_REGION="us-west-2"         (export values)
+
+unset TF_VAR_INSTANCE_TYPE
+
+
+list object
+--------------
+
+variable "azone" {
+    type=list
+    default=["us-east-1a","us-east-1b"]
+
+
+
+
+
+map object
+================
+$ terraform.exe plan --var region="us-east-2" ( will exectuing it compares the variables.tf)
+
+
+
+
+
+
+output variables ( when u create  resource the output will be printed)
+=================
+}
+output "public_ip" {
+  value= aws_instance.foo.public_ip
+}
+
+
+
+
+ provisioner ( its kind of exec command which we see in docker) (it noting but like userdata in aws) 
+==============================
+
+ provisioner "local-exec"{
+  command= "echo ${aws_instance.foo.public_ip} >> sample.txt"
+
+ #availability_zone = var.azones
+  }
+
+2 types of provisioners
+1. local-exec ( this works on the machine where terraform is installed)
+2. remote-exec ( this will work on the machine which is created by terraform
+3. file ( copy local file to remote )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vpC peering using teeraform
+==============================
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "4.37.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+resource "aws_vpc" "vpc1" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_hostnames = "true"
+  tags = {
+    Name = "myvpc"
+  }
+}
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.vpc1.id
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "pubsub1"
+  }
+}
+resource "aws_subnet" "pub1" {
+  vpc_id     = aws_vpc.vpc1.id
+  cidr_block = "10.0.0.0/17"
+  availability_zone = "us-east-1a"
+  map_public_ip_on_launch = "true"
+  tags = {
+    Name = "pubsub1"
+  }
+}
+resource "aws_subnet" "pub2" {
+  vpc_id     = aws_vpc.vpc1.id
+  cidr_block = "10.0.128.0/18"
+  availability_zone = "us-east-1b"
+  map_public_ip_on_launch = "true"
+  tags = {
+    Name = "pubsub2"
+  }
+}
+resource "aws_subnet" "dmz1" {
+  vpc_id     = aws_vpc.vpc1.id
+  cidr_block = "10.0.192.0/19"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "dmzsubnet1"
+  }
+}
+resource "aws_subnet" "dmz2" {
+  vpc_id     = aws_vpc.vpc1.id
+  cidr_block = "10.0.224.0/20"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "dmzsubent2"
+  }
+}
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.vpc1.id
+
+  tags = {
+    Name = "myigw"
+  }
+}
+resource "aws_route_table" "pubrt" {
+  vpc_id = aws_vpc.vpc1.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+  tags = {
+    Name = "pubrt"
+  }
+}
+resource "aws_route_table" "dmzrt" {
+  vpc_id = aws_vpc.vpc1.id
+
+  route  {
+    cidr_block = "10.0.1.0/24"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+   tags = {
+    Name = "dmzrt"
+  }
+}
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.pub1.id
+  route_table_id = aws_route_table.pubrt.id
+}
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.pub2.id
+  route_table_id = aws_route_table.pubrt.id
+}
+resource "aws_route_table_association" "c" {
+  subnet_id      = aws_subnet.dmz1.id
+  route_table_id = aws_route_table.dmzrt.id
+}
+resource "aws_route_table_association" "d" {
+  subnet_id      = aws_subnet.dmz2.id
+  route_table_id = aws_route_table.dmzrt.id
+}

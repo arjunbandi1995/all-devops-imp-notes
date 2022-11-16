@@ -1,0 +1,2 @@
+maven is a build tool 
+build means coverting code into working atrifact is called as build, so maven is a build tool, java developers use this tool maven 

@@ -1,0 +1,220 @@
+vpc creation requirments 
+----------------------------------------
+vpc 
+subenet 
+roundtable 
+routetable associtation 
+route53
+loadbalancer 
+autoscaling 
+=============================================
+
+if we want to work we need to work in a region
+we are creating instance in network 
+
+
+N.virigin
+
+vpc- 172.31.0.0/16
+vpc are sub didvide into subnet all the subnets are connected via round table
+internet gate way will be attached to the vpc 
+always we deploy our application in 3 aviablelity zone 
+application will be 3 or more
+
+
+
+
+
+in route53 we configure domian. when we hit route 53 the request will go to  the load balancer 
+first request will go to first app server, second will go to second app server and third to third app server
+*internete gate will be attached to public subenet 
+*if private subnet wants internet then we need to depoly NATgateway in public subnet
+
+ sudo cp index.html /var/www/httpd (save ur website here) 
+
+
+example 
+
+----------------
+us-east-1a
+----------------
+public1 subent }   
+public2 subnet }  
+
+dematalizer(DMZ)1 subnent } 
+dematalizer(DMZ)2 subnent } 
+
+private1 subent }
+private2 subent }  holds data base 
+
+----------------
+us-east-1b
+----------------
+
+public1 subent 
+public2 subnet 
+
+dematalizer(DMZ)1 subnent 
+dematalizer(DMZ)2 subnet 
+
+private1 subent
+private2 subent 
+
+
+
+
+
+------------------------
+create auto scaling
+----------------------- 
+using launch configuration we create auto scaling groups 
+
+load balancer( target group <register the running server on traget group> )
+*basically the loadbalalncer will create a domian which will send the request to all apps in round robin way 
+register loadbalancer to auto scaling group 
+
+
+
+
+https://www.davidc.net/sites/default/subnets/subnets.html  ( for createing cider)
+
+
+pub1                    pub2
+us-east-1a              us-east-1b   = public round table 
+
+
+
+
+dmz1                    dmz2
+us-east-1a              us-east-1b = dmz round table 
+
+
+
+private1                private2
+us-east-1a              us-east-1b = private round table 
+
+
+
+
+order
+===================================
+
+
+
+dmzsubent1 =>us-east-1a =>192.168.0.0/23
+dmzsubent2 =>us-east-1b =>192.168.2.0/23	
+pubsubnet1 =>us-east-1a =>192.168.4.0/23	
+pubsubnet2 =>us-east-1b =>192.168.6.0/23	
+privsubnet1 =>us-east-1a =>192.168.8.0/23	
+privsubnet2 =>us-east-1b =>192.168.10.0/23	
+
+
+
+in vpc (DNS hostnames settings) = enable
+in subnet public subnet (Enable auto-assign public IPv4 addre) = enable 
+
+
+for allowing internet in public rt goto route table= routes add traffic 
+
+
+
+
+
+
+
+custom vpc
+1. you need CIDR range..(classless inter domain routing)
+ 192.168.0.0/19 => 2^(32-subnetmak)
+172.162.43.29/20
+10.0.0.0/16
+
+1.create vpc using custome cidr
+2. create sub network using custom cidr
+3. create internet gateway with vpc
+4. round tables
+5. subnet associaations with route tables.
+===============
+no of vpc -1
+no of subnet-6
+no of igw =1
+no of round tables=depends on the typr of subnets
+
+======================================
+
+
+
+dmzsubent1 =>us-east-1a =>192.168.0.0/23
+dmzsubent2 =>us-east-1b =>192.168.2.0/23	
+pubsubnet1 =>us-east-1a =>192.168.4.0/23	
+pubsubnet2 =>us-east-1b =>192.168.6.0/23	
+privsubnet1 =>us-east-1a =>192.168.8.0/23	
+privsubnet2 =>us-east-1b =>192.168.10.0/23	
+
+
+
+
+vpc cidr =>10.0.0.0/20
+dmzsub1 = 10.0.0.0/23	
+pubsub1 = 10.0.2.0/23	
+pivsub1 = 10.0.4.0/22	
+
+
+
+
+
+=====================================================================================================
+bashinhost (PRIVATE SUBENET INSTANCE)
+_____________________
+**to connect to a private vpc network launch one public instance with public vpc than connect in that 
+create .pem file and copy the key pair in that and using ssh connect 
+chmod 400 test.pem( give this permission for pem file)
+
+to give internet for private subnet use NAT gateway 
+nat-gateway=A highly available, managed Network Address Translation 
+(NAT) service that instances in private subnets can use to connect to services in other VPCs, on-premises networks, or the internet.
+
+(NATgateway are created on public subnet)
+once u create natgateway modifiy the round tablel of private subnet
+
+
+=======================================================================================================
+
+
+
+
+
+
+
+create vpc 
+create subnet
+create internet gateway 
+creating route tables and route table assocition
+seperate subenet in subnet associtaion
+create natgatway for private subnet 
+
+
+Launch Configurations
+Auto Scaling Groups
+
+Load Balancers
+Target Groups
+
+
+Security Groups
+Elastic IPs
+
+
+
+
+
+
+
+
+
+
+
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=172.31.80.245
+kubeadm join 172.31.80.245:6443 --token cqmowi.lezpkjczuzhyfo3u \
+        --discovery-token-ca-cert-hash sha256:9de0143c54a265892411fc21460435d199329512aeb8194ea20ca106078c4aef
+
+

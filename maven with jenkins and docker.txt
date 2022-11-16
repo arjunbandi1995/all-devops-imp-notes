@@ -1,0 +1,29 @@
+cd /usr/local/src
+sudo wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+cd /usr/local/src
+ cd /etc/profile.d/
+
+vi maven.sh
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.15.0.10-2.el8_6.x86_64
+export M2_HOME=/usr/local/src/apache-maven
+export MAVEN_HOME=/usr/local/src/apache-maven
+export PATH=${M2_HOME}/bin:${PATH}
+--------------------------------
+if in case maven doesnt work 
+---------------------------------
+run this commands 
+
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+
+
+
+
+
+
+
+
+
+

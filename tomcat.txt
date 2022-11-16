@@ -1,0 +1,15 @@
+chnaging user name and password in tomcat 
+cd /opt
+cd apache-tomcat-9.0.65
+cd conf/
+vi tomcat-users.xml
+
+
+
+==================
+cd webapps/
+ls -ld webapps/
+chmod 777 webapps/
+cd webapps
+cd manager/
+cd  META-INF/

@@ -1,0 +1,27 @@
+AWS CLOUD TRAIL
+================
+
+records and tracks all application Programming interface (API) requests in your AWS Account 
+
+request can be made form 
+SDK<software development kits> , AWS command line interface , AWS managment console, other aws service
+
+cloud trail log files is recordes in s3 
+
+new file logs are created every 5 min 
+
+cloud trail is suppoterd global reagion
+
+
+
+
+USE CASE OF CLOUD TRRAIL 
+========================
+* effective for security analysis
+*monitor restricted API calls 
+*Notification of threshold breaches 
+
+resolve day to day operational issues
+filtering mechanisms for isolation data 
+quicker root cause identification 
+speedy resolution 

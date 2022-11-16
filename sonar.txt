@@ -1,0 +1,21 @@
+mvn sonar:sonar \
+  -Dsonar.projectKey=mavnproj \
+  -Dsonar.host.url=http://54.234.196.185:9000 \
+  -Dsonar.login=008bf68af03a86713f31a144aff47caa3ceec852
+
+<profiles>
+<profile>
+<id>sonar</id>
+<activation>
+<activeByDefault>true</activeByDefault>
+</activation>
+<properties>
+<!-- Optional URL to server. Default value is http://localhost:9000 -->
+<sonar.host.url>
+http://http://3.93.198.231:9000
+</sonar.host.url>
+<sonar.projectKey> testpro </sonar.projectKey>
+<sonar.login> 008bf68af03a86713f31a144aff47caa3ceec852 </sonar.login>
+</properties>
+</profile>
+</profiles>

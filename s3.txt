@@ -1,0 +1,39 @@
+s3 has 2 types 
+
+crr = cross region replication
+srr = same region replication
+
+
+put iam s3 role for aws instanec
+install aws cli in ec2
+aws configure 
+
+maximum file upload size in s3 is 160gb above that if we want upload in bucket form aws console bucket is not possible 
+we need to use aws cli 
+aws s3 src dest 
+
+multi part upload
+========================
+Multipart upload allows you to upload a single object as a set of parts.
+ Each part is a contiguous portion of the object's data. You can upload these object parts
+ independently and in any order. If transmission of any part fails, you can retransmit that part without affecting other parts.
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash 
+sudo yum install unzip -y 
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+sudo yum install httpd -y 
+sudo systemctl start httpd 
+sudo systemctl enable httpd
+aws s3 s3://buckettwo222/index.html .
+sudo index.html /var/www/html

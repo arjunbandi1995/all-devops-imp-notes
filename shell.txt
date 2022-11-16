@@ -1,0 +1,6 @@
+shell scrpiting ends with .sh
+
+shell scrpitinh need permission chmod +x first.sh
+to run script ./first.sh
+source first.sh
+sudo chmod 777 /tmp/rules( give root persmission to the folder) 

@@ -1,0 +1,653 @@
+wansible install auto
+===================
+#!/bin/bash
+sudo apt update
+sudo apt install software-properties-common -y 
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible -y
+sudo useradd -m ansible && echo "ansible:ansible" | sudo chpasswd
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+sudo -s su - ansible -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa"
+
+
+ansible on ubuntu node
+=======================
+#!/bin/bash
+sudo sed -i '/PasswordAuthentication/s/no/yes/' /etc/ssh/sshd_config
+sudo systemctl reload sshd.service
+sudo useradd -m ansible && echo "ansible:ansible" | sudo chpasswd
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+
+
+ansible on redhat 
+====================
+#!/bin/bash
+sudo sed -i '/PasswordAuthentication/s/no/yes/' /etc/ssh/sshd_config
+sudo systemctl reload sshd.service
+sudo useradd ansible && echo ansible | passwd ansible --stdin
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ansible
+chsh -s /bin/bash
+export ps1='$(whoami)@(hostname):$(pwd)$ '
+exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+once u create controll machine login in and su user 
+if ansbile@ not aviable than run 
+
+chsh -s /bin/bash
+export ps1='$(whoami)@(hostname):$(pwd)$ '
+
+ls -a ( check hidden files in system) 
+cat .ssh/id_rsa
+vi .ssh/authorized_keys ( copy control machine ssh id here )
+cat .ssh/id_rsa.pub ( do this on controll machine and copy this to nodes authorized key )
+
+
+
+
+
+
+
+vi authorized_keys
+
+playbook to copy ssh keygen 
+=====================================
+---
+ - name: public key copy 
+   hosts: all
+   remote_user: ubuntu
+   tasks:
+   - name: Ensure key is in root's ~/.ssh/authorized_hosts
+     authorized_key:
+     user: ansible
+     state: present
+     key: '{{ item }}'
+   with_file:
+    - ~/.ssh/id_rsa.pub
+
+
+mange user on nodes
+=====================
+--- 
+ - hosts: all
+   become: yes 
+   remote_user: ec2-user
+   tasks:
+     - name: user creation
+       user: 
+         name: ramya
+         state: present 
+     - name: ensure adding ramya in sudoers file
+     lineinfile:
+       path: /etc/sudoers
+       state: present 
+       regexp: '^%ramya/s'
+       line: 'ramya ALL=(ALL:ALL) NOPASSWD:ALL
+     - name: ensue key in root 
+       authorized_key:
+         user: ansible
+          state: present 
+       key: '{{ item }}'
+     with_file:
+      - ~/.ssh/id_rsa.pub
+
+id_user 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+install ansible 
+
+on control machine create ansible user 
+
+sudo adduser ansible 
+
+
+change sudo permission 
+
+sudo visudo <ansible ALL=(ALL:ALL) NOPASSWD:ALL> add this for password less
+
+
+ansible ALL=(ALL:ALL) ALL (here if we add NOPASSWD the we no need to provided become password and -K)
+----------------------------------
+
+change ssh config 
+
+sudo vi /etc/ssh/sshd_config 
+
+
+passwordauthection yes 
+
+
+cd /etc/ansible( host folder) 
+
+
+
+
+on ansible worker node also do the same add user and change sudo permission 
+
+
+for password less method generate ssh-keygen 
+
+
+ssh-keygen 
+
+ssh-copy-id ansible@<ip address> (copy control machine ssh id ) 
+
+
+
+ansible adhoc commands examples 
+-----------------------------------
+======================================
+
+ ansible all -m ping -i myinv ( to check custom inventory ) 
+ansible all -m file -a "path=file1.txt state=touch"( file module )
+ ansible all -m shell -a "cat /etc/passwd | grep -i ansible"( shel commands) 
+
+
+ansible -m apt -a "name=git state=present" ubuntu -b -K ( use captial K ) 
+
+ ansible-playbook copy2.yml --syntax-check
+
+
+Playbook ( its a collection of play = play is a collection of tasks) 
+===========================================================================
+ping.yml 
+
+---
+- hosts: all
+  tasks: 
+    - name: pinging 
+      ping: 
+
+===========================================================
+copy playbook
+===========================================================
+---
+ - hosts: ubuntu
+   tasks:
+   - name: file creation on ubuntu
+     file:
+       path: file250.txt
+       state: touch
+   - name: directory create on ubuntu
+     file:
+       path: dir1
+       state: directory
+ - hosts: redhat
+   tasks:
+   - name: directory creation
+     file:
+       path: di9000
+       state: directory
+
+===================================
+when condition in ansible
+==================================
+
+
+---
+ - name: playbook for whn
+   hosts: all
+   tasks:
+   - name: install apache2
+     apt:
+       name: apache2
+       state: present
+     when: ansible_distribution == "ubuntu"
+   - name: insall appache for red
+     yum:
+       name: apache2
+       state: present
+     when: ansible_distribution == "redhat"
+
+===================================================
+
+
+
+debug playbook 
+================================
+---
+ - hosts: all
+   tasks:
+   - name: print message
+     debug:
+       msg: hello  i am in ur pc
+
+
+handlers ( handlers wil be used for services when evere there is code change than we can use handlers) (using nofity)
+ handlers is used to handled the service and notfiry is used to notify the handler when to operate 
+===============================
+---
+ - name: paly for web instalation
+   hosts: redhat
+   become: yes
+   tasks:
+   - name: installing httpd
+     yum:
+       name: httpd
+       state: present
+   - name: deployment
+     copy:
+       src: index.html
+       dest: /var/www/html
+     notify: restart httpd
+   handlers:
+   - name: restart httpd
+     service:
+         name: httpd
+         state: restarted
+
+
+
+
+
+
+ignore_errors: yes ( adding this in playbook will ignore and run whole play)
+
+we can add tags in middle 
+ 
+
+tags playbook 
+================================
+---
+ - hosts: all
+   tasks:
+   - name: task1
+     debug:
+       msg: task1
+     tags:
+        - redhat
+        - web
+ - name: task2
+     debug:
+       msg: task2
+     tags:
+        - redhat
+        - web
+ - name: task3
+     debug:
+       msg: task3
+     tags:
+        - ubuntu
+        - db
+ - name: task4
+     debug:
+       msg: task4
+     tags:
+        - ubuntu
+        - mid
+
+
+never tags
+===============================
+---
+ - hosts: all
+   tasks:
+   - name: task1
+     debug:
+       msg: task1
+     tags:
+        - redhat
+        - web
+ - name: task2
+     debug:
+       msg: task2
+     tags:
+        - redhat
+        - web
+ - name: task3
+     debug:
+       msg: task3
+     tags:
+        - ubuntu
+        - db
+        - always
+ - name: task4
+     debug:
+       msg: task4
+     tags:
+        - ubuntu
+        - mid
+        - never
+
+
+always tags will execte always even if u skip on run time 
+
+
+
+
+ansible-playbook tag.yml --skip-tags redhat   (skip particular tags on run time) 
+ansibel-playbooks tags.yml --tags db --limit ubuntu
+ansible-playbooks tags.yml --tags db
+
+
+using tags we can run tasks on particular server
+
+=====================================================
+
+
+
+
+
+
+
+blocks yml 
+==============================--
+---
+ -hosts
+  tasks:
+  - name: Install, configure, and start Apache
+     block:
+       - name: Install httpd and memcached
+         ansible.builtin.yum:
+           name:
+           - httpd
+           - memcached
+           state: present
+
+       - name: Apply the foo config template
+         ansible.builtin.template:
+           src: templates/src.j2
+           dest: /etc/foo.conf
+
+       - name: Start service bar and enable it
+         ansible.builtin.service:
+           name: bar
+           state: started
+           enabled: True
+     when: ansible_facts['distribution'] == 'CentOS'
+     become: true
+     become_user: root
+     ignore_errors: yes
+
+
+
+
+
+
+
+debug.yml
+===============
+---
+ - hosts: all
+   tasks:
+   - name: print message
+     debug:
+       msg: hello  i am in ur pc
+
+
+id.yml
+============================
+---
+ - hosts: redhat
+   remote_user: ec2-user
+   tasks:
+   - name: id
+     shell: id
+     register: out
+   - name: debug
+     debug:
+       msg: "{{ out.stdout }}"
+
+
+
+become_user: it will run as ansible 
+remote_user: it will work as ubuntu user 
+
+
+
+any user if need to be controlled by ansible CM the ssh-copy-id need to be run  with user name ex 
+ 
+ssh rani@172.182.6.33
+
+
+
+
+ins.yml
+=================================
+---
+ - name: playbook for whn
+   hosts: all
+   become: yes
+   tasks:
+   - name: install apache2
+     apt:
+       name: apache2
+       state: present
+     when: ansible_distribution == "ubuntu"
+   - name: insall appache for red
+     yum:
+       name: apache2
+       state: present
+     when: ansible_distribution == "redhat"
+
+
+
+to copy ssh to nodes.yml
+========================
+---
+ - name: public key is delpoyed 
+   hosts: all
+   remote_user: ubuntu
+   become: yes
+   tasks:
+   - name: ensure key is in roots ~/.ssh/above
+     authorized_key:
+       user: ansible
+       state: present 
+       key: '{{ item }}'
+     with_file:
+      - ~/.ssh/id_rss.pub
+
+
+delegate_to host
+======================
+---
+ - hosts: ubuntu
+   tasks:
+   - name: file creation on ubuntu
+     file:
+       path: file250.txt
+       state: touch
+     delegate_to: localhost
+
+
+delegate_to can run on local host 
+
+
+once run
+================
+---
+ - hosts: ubuntu
+   tasks:
+   - name: file creation on ubuntu
+     file:
+       path: file250.txt
+       state: touch
+     delegate_to: localhost
+     run_once: yes
+~
+
+
+
+
+gather facts
+================
+---
+ - name: paly for web instalation
+   gather_facts: false
+   hosts: ubuntu
+   become: yes
+   tasks:
+   - name: installing apache2
+     apt:
+       name: apache2
+       state: present
+   - name: deployment
+     copy:
+       src: index.html
+       dest: /var/www/html
+~
+
+
+gather_facts if u make false it will not gateher facts
+==========================================================
+
+
+
+ 
+
+=======================
+lineinfile
+=================
+
+---
+ - hosts: all
+   tasks:
+   - name: line
+     lineinfile:
+        path: file1.txt
+        line: "hello world arjun"
+        create: yes
+
+
+u can write file line by line
+
+-----------------------------------------------
+---
+ - hosts: all
+   tasks:
+   - name: line
+     lineinfile:
+        path: /etc/sudoers
+        line: "rani ALL=(ALL) NOPASSWD:ALL"
+
+
+
+change sudoers password 
+
+
+===================================================
+
+
+
+
+
+
+
+
+
+runnning play on tags 
+----------------------
+ansible-playbook tags.yml --tags db ( limit playbook on particular server)
+ansible-playbook tags.yml --limit ubuntu ( limit on particular server)
+ansible-playbook ping.yml --ask-vault-pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ansibles roles (its like hreml package)
+==========================================
+ROLES ARE NOTHING BUT COLLECTIONS OF PLAYBOOK
+
+command
+----------
+
+ansible-galaxy- init appacherole( insttially the roles)
+
+code will be saved in gti hub 
+
+but the roles will be stored in the ansible galaxy 
+
+
+geerlinguy in the ansible-galaxy commutiy( perfect guy)
+
+
+
+
+
+
+
+
+
+include module (using the included commadn we can combaine two playbooks as one)
+===================
+
+---
+ - hosts: all
+   tasks: 
+   - name: task1
+     include: task1.yml
+   - name: task2
+     include: task2.yml
+
+
+ansible project using tomcat
+=============================
+
+ansible-galaxy (modules)
+
+1.init
+2.remove
+3.delete
+4. list 
+5.search
+6.import
+7.setup
+8.info
+9.install
+ 
+
+
+
+
+
+
+

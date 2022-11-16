@@ -1,0 +1,13 @@
+AWS CLI COMMANDS
+red hat command instance 
+
+aws ec2 run-instances \
+    --image-id ami-06640050dc3f556bb \
+    --instance-type t2.micro \
+    --key-name newaws.pem
+
+nexus has 4 types of repositeries 
+private (hosted) repos for snapshots
+private (hosted) repos for release
+proxy repos repo pointing to maven canteral 
+group repos to provide all of these repos under a single url

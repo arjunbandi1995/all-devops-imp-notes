@@ -1,0 +1,665 @@
+ kubectl get all -n kube-system( to check networking component)
+ 
+
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=172.31.29.140
+
+
+
+----------------------------------------------------------------------
+to remove kubernetes 
+kubeadm reset
+sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*   
+sudo apt-get autoremove  
+sudo rm -rf ~/.kube
+----------------------------------------------------------------------
+
+
+sudo kubeadm reset
+kubectl get nodes
+kubectl get ns
+kubectl get pods -n kube-system
+kubectl get pods
+kubectl delete all --all
+kubectl delete pod <pod name> ( best way to delete all pods)
+=============================================
+
+node
+
+kubeadm token list
+kubeadm  join --token 
+----------------------------------------------------------------------------------------------------------------------
+kubeadm join --token <token> <control-plane-host>:<control-plane-port> --discovery-token-ca-cert-hash sha256:<hash>
+for token=>  kubeadm token create
+
+for hash => openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | \
+   openssl dgst -sha256 -hex | sed 's/^.* //'
+
+for join command run this on master node=>  kubeadm token create --print-join-command
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+sudo kubeadm join --token asjgcj.ka339m7vy0m30q4a  172.31.23.3:6443 --discovery-token-ca-cert-hash 371aa21084ebd56c0772fa819065633690cede63c46469aecb99e46db87d6931
+
+
+==============================================================================================================================
+woeking witht k8s
+
+get all pods=> kubectl get pods -n kube-system
+
+check pod specs => kubectl explain pod
+create pod => kubectl create -f pod.yaml
+              kubectl get pod -o wide
+ pod details =>   kubectl describe
+ delete pod =>    kubectl delete <pod-name>
+                 kubectl explain rc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+========================================================================================================================================
+rc.yml
+
+apiversion: v1
+kind: Replicationcontroller
+metadata:
+       name: myrc
+spec:
+   replicas: 3
+   selector:
+        app: dev
+   template:
+     metadata:
+        name: nginx
+        labels:
+            app: dev
+     spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+          - containerPort: 80
+~
+============================================================================================================
+
+
+
+kubernetes
+==========
+0. kubernetes is a container orchestration tool 
+1. k8s is a open source tool
+2. automated deploymnet of container appalication
+3. automatic scaling of container application 
+4. automatic managemnet of container application
+5.
+
+
+
+=======================
+why we need k8s ?
+1:- physical server cant be scaled 
+    virtual machines 
+    contaianer 
+
+ 
+
+
+what is k8s provides
+
+
+
+
+sudo kubeadm join 172.31.24.237:6443 --token vscf6d.va279fpe8rxf3jbq \
+        --discovery-token-ca-cert-hash sha256:a2019c52305a3fd0d9f839a186be5ee9ad456701b2818df439e3ef1eb5135ce8
+
+
+
+
+
+namesspaces: its some kind of project folders (grouping of project )
+Kubectl get ns 
+kubectl get all -n calico-apiserver(checking name space )
+
+
+in our projcet we create namespace first else it takes default
+==============
+
+
+labels
+--------
+
+labesls are for identification 
+
+kubectl get all --show-labes -n kube-system(to check the labels )
+kubectl get pods --show-labels (pod labels )
+kubectl delete all --all( delete all pods )
+
+
+
+
+
+
+
+
+===============
+workloads
+=================
+pod
+replication controller
+replica set 
+deployment 
+daemonset
+jobs 
+cron jobs
+statefullset
+
+
+services
+=============
+clusterip 
+nodeport
+loadbalancer
+externalname
+
+
+
+
+metadata is informtion of object, data about data 
+spec is the data about conatiers 
+
+
+
+
+(project)
+==========
+
+kubectl explain pod (pod explain )
+
+1.pod.yml
+========
+
+apiVersion: v1
+kind: pod
+metadata:
+        name: mypod
+spec:
+        containers:
+           - image: nginx
+             name: mynignx
+             ports:
+               - containerPort: 80
+
+
+
+run pod in partical node 
+----------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+        name: mypod
+        labels:
+             app: dev
+spec:
+        nodeName: ip-172-31-87-254
+        containers:
+           - image: nginx
+             name: mynignx
+             ports:
+               - containerPort: 80
+
+
+--------------------------------------------
+
+create pod 
+
+kubectl create -f pod.yml
+ kubectl get pods -o wide (to check in which server the pod is running)
+kubectl delete -f pod.yml( to delete pods)
+kubectl describe pod mypod( full details od the pods )
+kubectl cluster-info( to check cluster ifno)
+
+
+
+
+2.pod.yml
+==============
+
+kubectl create ns dt1(to create namespace )
+kubectl get pods -n dt1 ( to get the namespace pods)
+kubectl get pods -n dt1 --show-labels( to check labels) 
+kubectl label po mypod env=prod -n dt1( cretate labels)
+kubectl label po mypod env=prod -n dt1 --overwrite( overwrite the labels of pod )
+kubectl label po mypod env=prod -n dt1 env- ( delete the label)
+kubectl delete pods --all ( delete all pods at a time )
+
+
+3.replication controller(rc.yml)
+----------------------------
+apiVersion: v1
+kind: ReplicationController
+metadata:
+        name: myrc
+spec:
+    replicas: 6
+    selector:
+            app: dev
+    template:
+            metadata:
+               labels:
+                       app: dev
+            spec:
+                    containers:
+                     - image: nginx
+                       name: mynignx
+                       ports:
+                        - containerPort: 80
+
+kubectl describe pod myrc-464jd ( describes a pod )
+
+kubectl label pod  myrc-64kld --overwrite app=test
+
+===============================
+4. replica set 
+-----------------
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+        name: myrs
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: dev
+    template:
+            metadata:
+               labels:
+                       app: dev
+            spec:
+                    containers:
+                     - image: nginx
+                       name: mynignx
+                       ports:
+                        - containerPort: 80
+
+
+
+5. deployment (deploy.yml)
+--------------------------
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+        name: mydeploy
+spec:
+    replicas: 6
+    selector:
+        matchLabels:
+            app: dev
+    template:
+            metadata:
+               labels:
+                       app: dev
+            spec:
+                    containers:
+                     - image: nginx
+                       name: mynignx
+                       ports:
+                        - containerPort: 80
+
+
+
+kubectl scale deployment mydeploy --replicas=4(manual scaling of pods)
+kubectl rollout status deployment mydeploy( to check update of pods ) 
+kubectl rollout history  deployment mydeploy( check history)
+kubectl rollout undo depolyment mydeploy --to-revision=1( to roll back the update)
+kubectl set image deployment mydeploy mynignx=ngnix:1.23( to update the image version)
+
+6.service 
+-----------------------------
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mynginxsvc
+spec:
+  selector:
+          app: dev
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+~
+
+
+service obeject depends on the selector it should match 
+
+
+
+we have different types of services 
+clusterIP which is used internal within the VPC you can use this ip to connect form search the app form pod to pod we can this app by using one pod 
+
+
+nodeport.yml
+===============================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mynginxsvc
+spec:
+  type: NodePort
+  selector:
+          app: dev
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+
+
+with out pod ip i can acces the appplication using node ip 
+
+
+cluster ip: using this i can access the application within the pods 
+nodeport : i can exec the pod publicly 
+
+
+
+* aws eks services 
+-----------------------------------
+
+
+aws eks update-kubeconfig --region us-east-1 --name ekscluster1 (to join the created cluster)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7.deamon set (ds.yml)
+-------------=====
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+        name: myds
+spec:
+    selector:
+            matchLabels:
+             app: dev
+    template:
+         metadata:
+             labels:
+                app: dev
+         spec:
+            containers:
+                    - name: nginx
+                      image: nginx
+                      conatinerPort:
+
+
+
+ kubectl label node ip-172-31-24-237 node=ssd(change labels of a node)
+
+
+deamon set to run on particular node
+-====================================
+
+
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+        name: myds
+spec:
+    selector:
+            matchLabels:
+             app: dev
+    template:
+         metadata:
+             labels:
+                app: dev
+         spec:
+            nodeSelector:
+                         node: ssd
+            containers:
+                    - name: nginx
+                      image: nginx
+
+
+
+===========================================
+job.yml
+---------------
+apiVersion: batch/v1
+kind: Job
+metadata:
+        name: myjobs
+spec:
+    template:
+         metadata:
+             labels:
+                app: dev
+         spec:
+            restartPolicy: OnFailure
+            containers:
+                    - name: myjob
+                      image: bhanuprakashece410/batch-job
+
+
+
+jobs.yml if we need to run multiple jobs 1 by 1
+---------------------------------------------------
+apiVersion: batch/v1
+kind: Job
+metadata:
+        name: myjobs
+spec:
+    completions: 5
+    template:
+         metadata:
+             labels:
+                app: dev
+         spec:
+            restartPolicy: OnFailure
+            containers:
+                    - name: myjob
+                      image: bhanuprakashece410/batch-job
+
+
+
+
+
+jobs needs to run multiplr prallerl
+--------------------------------
+apiVersion: batch/v1
+kind: Job
+metadata:
+        name: myjobs
+spec:
+    completions: 5
+    parallelism: 2
+    template:
+         metadata:
+             labels:
+                app: dev
+         spec:
+            restartPolicy: OnFailure
+            containers:
+                    - name: myjob
+                      image: bhanuprakashece410/batch-job
+
+
+
+ kubectl run mynginx --image nginx( run pods with out wiriting yaml file)
+
+
+~
+~
+~
+~
+~
+
+
+kubectl commands
+=====================
+kubectl run nginx --image=nginx --command --<cmd> <argl>....<argN>
+kubectl run testpod3 --image=radial/busyboxplus:curl -i --tty( create a pod and get insidde the pod)
+kubectl attach testpod4 -c testpod4 -i -t
+ kubectl delete pod testpod ( to delete pods)
+kubectl run testpod3 --image=radial/busyboxplus --command -- bash
+
+kubectl exec -it testpod -c -- bash   (same like docker)
+
+
+
+
+
+-i --tty ( lests u login inside a pod) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VOlUEMS in kuberneters 
+=================================
+
+
+1 emptyDir
+An emptyDir volume is first created when a Pod is assigned to a node, 
+and exists as long as that Pod is running on that node. As the name says, 
+the emptyDir volume is initially empty. All containers in the Pod can read and write the same files in the emptyDir volume, 
+though that volume can be mounted at the same or different paths in each container. When a Pod is removed from a node for any reason, 
+the data in the emptyDir is deleted permanently.
+
+Note: A container crashing does not remove a Pod from a node. The data in an emptyDir volume is safe across container crashes.
+
+
+
+*if a conatianers in a same pod and if i want to share the file inbetween than we should use emptyDir
+*empty dir is at the pod level 
+*if the pod itself is deleted than the volume will also be gone 
+
+
+
+
+
+
+emptydir.yml
+------------------
+apiVersion: v1
+kind: Pod
+metadata:
+        name: myemptydir
+        labels:
+             app: dev
+spec:
+        containers:
+           - image: centos
+             name: c1
+             command: ["/bin/bash","-c","sleep 4000"]
+             volumeMounts:
+                     - name: test
+                       mountPath: "/tmp/test"
+           - name: c2
+             image: centos
+             command: ["/bin/bash","-c","sleep 4000"]
+             volumeMounts:
+                     - name: test
+                       mountPath: "/tmp/data"
+        volumes:
+             - name: test
+               emptyDir: {}
+
+
+
+
+
+ kubectl exec myemptydir -c c1 -- ls /tmp( to checkt the data of conatiner) 
+ kubectl exec myemptydir -c c1 -- touch  /tmp/test/test/file1
+
+
+
+
+
+
+
+nfs server voluesm 
+---------------------------------
+An nfs volume allows an existing NFS (Network File System) share to be mounted into a Pod. Unlike emptyDir, 
+which is erased when a Pod is removed, the contents of an nfs volume are preserved and the volume is merely unmounted. 
+This means that an NFS volume can be pre-populated with data, and that data can be shared between pods.
+ NFS can be mounted by multiple writers simultaneously.
+Note:
+You must have your own NFS server running with the share exported before you can use it.
+
+Also note that you can't specify NFS mount options in a Pod spec. 
+You can either set mount options server-side or use /etc/nfsmount.conf. 
+You can also mount NFS volumes via PersistentVolumes which do allow you to set mount options.
+
+
+
+
+
+
+persistent volumes 
+====================================
+persistent volumes main agenda is to use same volumme to the new node
+we can make use of ebs storage 
+we use cloud storage 
+*its is a peice of storage volume which has data all the time instead of mounting path on the worker node we will mount on the cloud 
+-----------------------------------------------------------------------
+
+A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an
+ administrator or dynamically provisioned using Storage Classes. It is a resource in the cluster just like a 
+node is a cluster resource. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual 
+Pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a 
+cloud-provider-specific storage system. 
+
+persistent volume (pv)= if a pod goes downn and a we create a new pod the pod should have same conatiner 
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,130 @@
+ installing docker 
+
+
+sudo apt-get install docker.io -y 
+--------------------------
+create docker user 
+--------------------------
+sudo chmod 666 /var/run/docker.sock
+sudo usermod -G docker ubuntu 
+
+
+docker rm (container id)
+
+docker ps -aq => display all containers
+docker rm 'docker ps -aq'
+
+docker images -q 
+docker rm 'docker ps -q' = delet all images at a time 
+
+
+
+remove container 
+======================
+docker rm u1 
+docker rm -f u1
+docker rmi u1 
+
+
+
+docker ps -aq => all continar info
+docker rm 'docker ps -aq' => delete call conatinar
+===================================
+create conatiner depoly ================
+================================
+
+
+docker run -d -p 8085:80 --name h1 httpd => install and run httpd
+docker cp index.html h1:/usr//locol/apache2/htdocs
+
+docker run -d -v /home/ubuntu:/usr/locol/apache2/htdocs -p 8086:80 --name h2 httpd 
+
+go to conatner without entering 
+======================
+docker exec -it h2 bash 
+
+
+check container volume 
+========================
+docker container inspect u1 | grep -iA7 mounts
+docker ps -a | grep -i m3
+
+
+
+asign working diractory 
+=============================== 
+docker run -it --name m2 -w /test ubuntu (-w is a working directory)
+docker run -it --name m3 --rm ubuntu (afterr testing the conatiner after exit the container will get deleted )
+docker run -it -v /app --name u1 ubuntu ( creating /app)
+
+
+docker run -d -P --name h4 httpd( assigans automatic port number )
+
+
+check port number which are working 
+=========================
+ netstat -lntp
+docker port h2 ( check partucilar port number of continer )
+
+
+take snapshot of conatiner 
+==================================
+docker commit -m creatinggitimage u5 gitimage
+docker tag <imageid> gitmave2.0 rename image 
+
+docker run -it --name test --rm gitmaven:2.0
+docker login
+docker tomcat:test arjunbandi/tomcatrepo:3.5
+docker push arjunbandi.tomcatrepo:3.5
+
+
+Docker files (create in Dockerfile)
+docker build --tag demo . ( buid docker container using docker file )
+docker run -it demo
+docker run -it --rm demo
+__________________
+
+
+docker inspect the contantes on container 
+=================================
+docker inspect u2
+ docker volume create app
+ docker run -it --volumes-from u3 --name u4 ubuntu
+docker volume rm app
+
+
+
+FROM (which image (ubuntu))
+MAINTAINER (user name )
+RUN apt-get update
+CMD git --version( run when conatiner is created using docker image 
+ENTRYPOINT (git --version (cannot be over riden)
+COPY (copy file locally and )
+ADD wget
+WORKIDIR (creating working dir)
+ENV
+EXPOSE
+
+
+
+
+
+FROM ubuntu
+
+MAINTAINER arjun@gmail.com
+
+WORKDIR /test
+
+COPY insdex.html .
+
+ADD smaple.txt .
+
+RUN apt-get update \
+   && apt-get install git -y \
+   && apt-get install maven -y
+
+ENV a=30
+
+ENV m2_HOME=/test
+
+

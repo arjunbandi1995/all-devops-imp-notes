@@ -1,0 +1,172 @@
+helm is a deployment model for kubernetes 
+Helm is a package manager which will simplify the package installation 
+Packages are stored in repository 
+Helm is just like a apt-get/yum 
+Using helm we can do the upgrades operates on the packages 
+.Yaml are stored in github 
+helm Package can be stored in Nexus repository
+helm chart is nothing but helm packages 
+helm is a template engine 
+To deploy we need to create helm release 
+Helm will talk to the API server 
+Helm uses .kube/ config to commucate with the api server
+
+
+
+
+secrets is a concept in kubernetes  that  holds some sensitive information like password API,keys,tokens 
+
+kubectl get secrets
+
+
+
+
+helm repo list ( check helm repo)
+helm repo add stable https://charts.helm.sh/stable( adding helm repo)
+helm search repo jenkins ( to checkage packages)
+helm install rel-1.0 stable/tomcat ( to install package )
+helm install testchart stable/tomcat(installing packages)
+helm show chart stable/tomcat (chart list)
+helm show values stable/jenkins( print yaml file with all values)
+helm show readme stable/jenkins( read me filea)
+helm show all    stable/jenkins(all)
+helm repo remove stable( to delete repo list)
+helm repo add bitnami https://charts.bitnami.com/bitnami( to add bitmani repo)
+helm search repo mysql --versions( to check old version )
+
+
+
+ kubectl get svc -w testchart-tomcat
+
+we can use same name space by add the name space in (kubectl create ns dev )
+
+helm uninstall mydb -n dev(uninstalll form the same name spcae)
+helm get values mydb ( to check user specified valuses)
+helm get all mydb( all values)
+helm show values stable/tomcat( to check the default values)
+helm get values mytomcat --all( computed values)
+
+helm show chart stable/tomcat ( to check the git hub repo)
+
+helm get notes mytomcat( will show the notes and relese steps) 
+helm get manifest mytomcat( to get manifest file )
+helm history mytomcat( will show the how many times the tomcat was updated)
+helm install test stable/tomcat --version 0.4.1( to deploy custom version )
+
+helm repo update( it will update the repo)
+helm upgrade test stabel/tomcat ( to upadate the app first upadte the repo )
+
+
+helm rollback test ( to rollback to previous version )
+helm rollback test  2( rollback to partuclar release)(using this command we can create the instance even 
+                                          if the packeage is installed but maintained the helm history )
+
+helm uninstall test --keep-history( to keep the history details)
+helm upgrade mytomcat stable/tomcat --reuse-values( to use the same values)
+
+helm template stable/tomcat( to get the chart information)
+
+
+
+helm install mytomcat stable/tomcat --set replicaCount=2( to set values while installing)
+ helm install mytomcat stable/tomcat --set replicaCount=2 --set service.type=NodePort --set image.tomcat.tag=8.0( setting multipe values while install )
+ helm upgrade mytomcat -f values.yml stable/tomcat ( copy the values of yml file while installing )
+helm status mytomcat( show the status of the release )
+
+
+
+
+*show command will show all the iteams of a particular chart 
+*list will show release versions of the deployed charts 
+
+
+
+
+*the values is coming form values.yaml file 
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------
+helm mysql
+
+  Watch the deployment status using the command: kubectl get pods -w --namespace default
+
+Services:
+
+  echo Primary: my-release-mysql.default.svc.cluster.local:3306
+
+Execute the following to get the administrator credentials:
+
+  echo Username: root
+ echo  MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace default my-release-mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)
+YsgcCWD8Kv
+
+To connect to your database:
+
+  1. Run a pod that you can use as a client:
+
+      kubectl run my-release-mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.31-debian-11-r0 --namespace default --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
+
+  2. To connect to primary service (read/write):
+
+      mysql -h my-release-mysql.default.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=========================
+helm charts custom 
+==========================
+
+
+helm create testchart (command to create the chart)
+
+chart structer
+├── Chart.yaml
+├── charts
+├── templates
+│   ├── NOTES.txt
+│   ├── _helpers.tpl
+│   ├── deployment.yaml
+│   ├── hpa.yaml
+│   ├── ingress.yaml
+│   ├── service.yaml
+│   ├── serviceaccount.yaml
+│   └── tests
+│       └── test-connection.yaml
+└── values.yaml
+
+helm package testchart( to convert the custom chrat into tgz)
+
+ helm package -d /home/ubuntu testchart/( to save in custom location)
+
+ tar xfvz testchart-3.0.0.tgz( to unzip package)
+helm pull https://charts.bitnami.com/bitnami mysql( pull the gz(zipfile) form the website )
+
+helm pull bitnami/tomcat ( same as above ) 
+
+
+ helm lint testchart( to check the chart with mistakes ( syntax check ) ( after this command we can convert charts into packages)
+
+
+
